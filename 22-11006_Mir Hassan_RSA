@@ -1,0 +1,38 @@
+
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+import binascii
+import rsa
+
+#keys will be written and stored in a text file
+def keys():
+    (publicKey, privateKey) = rsa.newkeys(1024)
+    with open ('keys/publicKey,pem', 'wb') as p:
+        p.write(publicKey.save_pkcs1('PEM'))
+    with open ('keys/privateKey.pem', 'wb') as p:
+        p.write(privateKey.save_pkcs1('PEM'))
+
+keys()
+keyPair = RSA.generate(3072)
+
+#generate public key
+publicKey = keyPair.publickey()
+print(f"Public key:  (n={hex(publicKey.n)}, e={hex(publicKey.e)})")
+publicKeyPEM = publicKey.exportKey()
+print(publicKeyPEM.decode('ascii'))
+
+#generate private key
+print(f"Private key: (n={hex(publicKey.n)}, d={hex(keyPair.d)})")
+privateKeyPEM = keyPair.exportKey()
+print(privateKeyPEM.decode('ascii'))
+
+#message to encrypt
+test_msg = b'An encrypted message from Sundas'
+encryptor = PKCS1_OAEP.new(publicKey)
+encrypted = encryptor.encrypt(test_msg)
+print("Encrypted:", binascii.hexlify(encrypted))
+
+#decrypt the same message
+decryptor = PKCS1_OAEP.new(keyPair)
+decrypted = decryptor.decrypt(encrypted)
+print('Decrypted:', decrypted)
